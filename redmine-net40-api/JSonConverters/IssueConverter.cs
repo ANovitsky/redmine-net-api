@@ -95,8 +95,8 @@ namespace Redmine.Net.Api.JSonConverters
                 result.WriteIdOrEmpty(entity.ParentIssue, RedmineKeys.PARENT_ISSUE_ID);
                 result.WriteDateOrEmpty(entity.StartDate, RedmineKeys.START_DATE);
                 result.WriteDateOrEmpty(entity.DueDate, RedmineKeys.DUE_DATE);
-                result.WriteDateOrEmpty(entity.DueDate, RedmineKeys.UPDATED_ON);
-                result.WriteValueOrEmpty(entity.DoneRatio, RedmineKeys.DONE_RATIO);
+                result.WriteDateOrEmpty(entity.UpdatedOn, RedmineKeys.UPDATED_ON);
+                result.WriteValueOrDefault(entity.DoneRatio, RedmineKeys.DONE_RATIO);
 
                 result.WriteArray(RedmineKeys.UPLOADS, entity.Uploads, new UploadConverter(), serializer);
                 result.WriteArray(RedmineKeys.CUSTOM_FIELDS, entity.CustomFields, new IssueCustomFieldConverter(), serializer);

@@ -70,6 +70,14 @@ namespace Redmine.Net.Api
                 dictionary.Add(tag, val.Value);
         }
 
+        public static void WriteValueOrDefault<T>(this Dictionary<string, object> dictionary, T? val, String tag) where T : struct
+        {
+            if (!val.HasValue || EqualityComparer<T>.Default.Equals(val.Value, default(T)))
+                dictionary.Add(tag, default(T));
+            else
+                dictionary.Add(tag, val.Value);
+        }
+
         public static T GetValue<T>(this IDictionary<string, object> dictionary, string key)
         {
             object val;
