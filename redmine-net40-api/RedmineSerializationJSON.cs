@@ -72,7 +72,17 @@ namespace Redmine.Net.Api
 
         public static Dictionary<Type, JavaScriptConverter> Converters { get { return converters; } }
 
-        public static int MaxJsonLength { get; set; } = int.MaxValue;
+        static int _maxJsonLength = int.MaxValue;
+
+        public static int MaxJsonLength
+        {
+            get
+            {
+                return _maxJsonLength;
+                
+            }
+            set { _maxJsonLength = value; }
+        } 
 
         public static string JsonSerializer<T>(T type) where T : new()
         {
