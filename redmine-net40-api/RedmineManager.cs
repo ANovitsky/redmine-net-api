@@ -648,6 +648,10 @@ namespace Redmine.Net.Api
         {
             if (exception == null) return;
 
+            //custom handle exception
+            OnHandleException(new ErrorEventArgs(exception));
+
+
             switch (exception.Status)
             {
                 case WebExceptionStatus.Timeout: throw new RedmineException("Timeout!");
@@ -727,48 +731,80 @@ namespace Redmine.Net.Api
         {
             Type type = typeof(T);
 
-            if (mimeFormat == MimeFormat.json)
+            try
             {
-                var jsonRoot = (string)null;
-                if (type == typeof(IssueCategory)) jsonRoot = RedmineKeys.ISSUE_CATEGORY;
-                if (type == typeof(IssueRelation)) jsonRoot = RedmineKeys.RELATION;
-                if (type == typeof(TimeEntry)) jsonRoot = RedmineKeys.TIME_ENTRY;
-                if (type == typeof(ProjectMembership)) jsonRoot = RedmineKeys.MEMBERSHIP;
-                if (type == typeof (WikiPage)) jsonRoot = RedmineKeys.WIKI_PAGE;
+                if (mimeFormat == MimeFormat.json)
+                {
+                    var jsonRoot = (string)null;
+                    if (type == typeof(IssueCategory)) jsonRoot = RedmineKeys.ISSUE_CATEGORY;
+                    if (type == typeof(IssueRelation)) jsonRoot = RedmineKeys.RELATION;
+                    if (type == typeof(TimeEntry)) jsonRoot = RedmineKeys.TIME_ENTRY;
+                    if (type == typeof(ProjectMembership)) jsonRoot = RedmineKeys.MEMBERSHIP;
+                    if (type == typeof(WikiPage)) jsonRoot = RedmineKeys.WIKI_PAGE;
 
-                return RedmineSerialization.JsonDeserialize<T>(response, jsonRoot);
+                    return RedmineSerialization.JsonDeserialize<T>(response, jsonRoot);
+                }
+
+                return RedmineSerialization.FromXML<T>(response);
+            }
+            catch (Exception ex)
+            {
+                OnLog(new LogEventArgs
+                {
+                    Content = response
+                });
+                OnError(new ErrorEventArgs(ex));
+                throw;
             }
 
-            return RedmineSerialization.FromXML<T>(response);
         }
 
         private IList<T> DeserializeList<T>(string response, string jsonRoot, out int totalCount) where T : class, new()
         {
             Type type = typeof(T);
-            if (mimeFormat == MimeFormat.json)
+            try
             {
-                if (type == typeof(IssuePriority)) jsonRoot = RedmineKeys.ISSUE_PRIORITIES;
-                if (type == typeof(TimeEntryActivity)) jsonRoot = RedmineKeys.TIME_ENTRY_ACTIVITIES;
-                return RedmineSerialization.JsonDeserializeToList<T>(response, jsonRoot, out totalCount);
-            }
-
-            using (var text = new StringReader(response))
-            {
-                using (var xmlReader = new XmlTextReader(text))
+                if (mimeFormat == MimeFormat.json)
                 {
-                    xmlReader.WhitespaceHandling = WhitespaceHandling.None;
-                    xmlReader.Read();
-                    xmlReader.Read();
-
-                    totalCount = xmlReader.ReadAttributeAsInt("total_count");
-
-                    return xmlReader.ReadElementContentAsCollection<T>();
+                    if (type == typeof(IssuePriority)) jsonRoot = RedmineKeys.ISSUE_PRIORITIES;
+                    if (type == typeof(TimeEntryActivity)) jsonRoot = RedmineKeys.TIME_ENTRY_ACTIVITIES;
+                    return RedmineSerialization.JsonDeserializeToList<T>(response, jsonRoot, out totalCount);
                 }
+
+                using (var text = new StringReader(response))
+                {
+                    using (var xmlReader = new XmlTextReader(text))
+                    {
+                        xmlReader.WhitespaceHandling = WhitespaceHandling.None;
+                        xmlReader.Read();
+                        xmlReader.Read();
+
+                        totalCount = xmlReader.ReadAttributeAsInt("total_count");
+
+                        return xmlReader.ReadElementContentAsCollection<T>();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                OnLog(new LogEventArgs
+                {
+                    Content = response
+                });
+                OnError(new ErrorEventArgs(ex));
+                throw;
             }
         }
 
         private void ExecuteUpload(string address, string actionType, string data, string methodName)
         {
+            OnLog(new LogEventArgs
+            {
+                Address = address,
+                Method = actionType,
+                Content = data
+            });
+
             using (var wc = CreateWebClient(null))
             {
                 try
@@ -787,6 +823,13 @@ namespace Redmine.Net.Api
 
         private T ExecuteUpload<T>(string address, string actionType, string data, string methodName) where T : class, new()
         {
+            OnLog(new LogEventArgs
+            {
+                Address = address,
+                Method = actionType,
+                Content = data
+            });
+
             using (var wc = CreateWebClient(null))
             {
                 try
@@ -808,6 +851,13 @@ namespace Redmine.Net.Api
 
         private T ExecuteDownload<T>(string address, string methodName, NameValueCollection parameters = null) where T : class, new()
         {
+            OnLog(new LogEventArgs
+            {
+                Address = address,
+                Method = "GET",
+                Parameters = parameters
+            });
+
             using (var wc = CreateWebClient(parameters))
             {
                 try
@@ -825,6 +875,14 @@ namespace Redmine.Net.Api
 
         private IList<T> ExecuteDownloadList<T>(string address, string methodName, string jsonRoot, out int totalCount, NameValueCollection parameters = null) where T : class, new()
         {
+            OnLog(new LogEventArgs
+            {
+                Address = address,
+                Method = "GET",
+                Parameters = parameters
+            });
+            
+
             totalCount = -1;
             using (var wc = CreateWebClient(parameters))
             {
@@ -840,5 +898,34 @@ namespace Redmine.Net.Api
                 return null;
             }
         }
+
+        //Events
+
+        public event EventHandler<LogEventArgs> Log;
+
+        protected virtual void OnLog(LogEventArgs e)
+        {
+            var handler = Log;
+            if (handler != null) handler(this, e);
+
+        }
+
+        public event EventHandler<ErrorEventArgs> Error;
+
+        protected virtual void OnError(ErrorEventArgs e)
+        {
+            var handler = Error;
+            if (handler != null) handler(this, e);
+        }
+
+
+        public event EventHandler<ErrorEventArgs> HandleException;
+
+        protected virtual void OnHandleException(ErrorEventArgs e)
+        {
+            var handler = HandleException;
+            if (handler != null) handler(this, e);
+        }
+
     }
 }
