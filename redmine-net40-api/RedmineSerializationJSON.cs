@@ -72,11 +72,16 @@ namespace Redmine.Net.Api
 
         public static Dictionary<Type, JavaScriptConverter> Converters { get { return converters; } }
 
+        public static int MaxJsonLength { get; set; } = int.MaxValue;
+
         public static string JsonSerializer<T>(T type) where T : new()
         {
             try
             {
-                var ser = new JavaScriptSerializer();
+                var ser = new JavaScriptSerializer()
+                {
+                    MaxJsonLength = MaxJsonLength
+                };
                 ser.RegisterConverters(new[] { converters[typeof(T)] });
                 var jsonString = ser.Serialize(type);
                 return jsonString;
@@ -101,7 +106,10 @@ namespace Redmine.Net.Api
             totalCount = 0;
             if (String.IsNullOrEmpty(jsonString)) return null;
 
-            var ser = new JavaScriptSerializer();
+            var ser = new JavaScriptSerializer()
+            {
+                MaxJsonLength = MaxJsonLength
+            };
             ser.RegisterConverters(new[] { converters[type] });
             var dic = ser.Deserialize<Dictionary<string, object>>(jsonString);
             if (dic == null) return null;
@@ -177,7 +185,10 @@ namespace Redmine.Net.Api
         {
             if (String.IsNullOrEmpty(jsonString)) return null;
 
-            var ser = new JavaScriptSerializer();
+            var ser = new JavaScriptSerializer()
+            {
+                MaxJsonLength = MaxJsonLength
+            };
             ser.RegisterConverters(new[] { converters[type] });
 
             var dic = ser.Deserialize<Dictionary<string, object>>(jsonString);

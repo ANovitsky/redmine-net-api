@@ -15,14 +15,16 @@ namespace Redmine.Net.Api.JSonConverters
             {
                 var entity = new CustomFieldRole();
 
-                entity.Id = dictionary.GetValue<int>("id");
-                entity.Name = dictionary.GetValue<string>("name");
+                entity.Id = dictionary.GetValue<int>(RedmineKeys.ID);
+                entity.Name = dictionary.GetValue<string>(RedmineKeys.NAME);
 
                 return entity;
             }
 
             return null;
         }
+
+        public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer) { return null; }
 
         public override IEnumerable<Type> SupportedTypes { get { return new List<Type>(new[] { typeof(CustomFieldRole) }); } }
 

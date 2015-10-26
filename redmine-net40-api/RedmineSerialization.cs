@@ -32,26 +32,15 @@ namespace Redmine.Net.Api
         /// <exception cref="InvalidOperationException"></exception>
         public static string ToXML<T>(T obj) where T : class
         {
-            try
+            var xws = new XmlWriterSettings { OmitXmlDeclaration = true };
+            using (var stringWriter = new StringWriter())
             {
-                var xws = new XmlWriterSettings { OmitXmlDeclaration = true };
-                using (var stringWriter = new StringWriter())
+                using (var xmlWriter = XmlWriter.Create(stringWriter, xws))
                 {
-                    using (var xmlWriter = XmlWriter.Create(stringWriter, xws))
-                    {
-                        var sr = new XmlSerializer(typeof(T));
-                        sr.Serialize(xmlWriter, obj);
-                        return stringWriter.ToString();
-                    }
+                    var sr = new XmlSerializer(typeof(T));
+                    sr.Serialize(xmlWriter, obj);
+                    return stringWriter.ToString();
                 }
-            }
-            catch (Exception ex)
-            {
-                OnError(new SerializationErrorEventArgs(ex)
-                {
-                    Content = obj.GetType().ToString()
-                });
-                throw;
             }
         }
 
@@ -65,21 +54,10 @@ namespace Redmine.Net.Api
         /// using the System.Exception.InnerException property.</exception>
         public static T FromXML<T>(string xml) where T : class
         {
-            try
+            using (var text = new StringReader(xml))
             {
-                using (var text = new StringReader(xml))
-                {
-                    var sr = new XmlSerializer(typeof (T));
-                    return sr.Deserialize(text) as T;
-                }
-            }
-            catch (Exception ex)
-            {
-                OnError(new SerializationErrorEventArgs(ex)
-                {
-                    Content = xml
-                });
-                throw;
+                var sr = new XmlSerializer(typeof(T));
+                return sr.Deserialize(text) as T;
             }
         }
 
@@ -93,85 +71,10 @@ namespace Redmine.Net.Api
         /// using the System.Exception.InnerException property.</exception>
         public static object FromXML(string xml, Type type)
         {
-            try
+            using (var text = new StringReader(xml))
             {
-                using (var text = new StringReader(xml))
-                {
-                    var sr = new XmlSerializer(type);
-                    return sr.Deserialize(text);
-                }
-            }
-            catch (Exception ex)
-            {
-                OnError( new SerializationErrorEventArgs(ex)
-                {
-                    Content = xml
-                });
-                throw;
-            }
-        }
-
-        public static event EventHandler<SerializationErrorEventArgs> Error;
-
-        private static void OnError(SerializationErrorEventArgs e)
-        {
-            var handler = Error;
-            if (handler != null) handler(null, e);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <remarks>http://florianreischl.blogspot.ro/search/label/c%23</remarks>
-        public class XmlStreamingSerializer<T>
-        {
-            static XmlSerializerNamespaces ns;
-            XmlSerializer serializer = new XmlSerializer(typeof(T));
-            XmlWriter writer;
-            bool finished;
-
-            static XmlStreamingSerializer()
-            {
-                ns = new XmlSerializerNamespaces();
-                ns.Add("", "");
-            }
-
-            private XmlStreamingSerializer()
-            {
-                serializer = new XmlSerializer(typeof(T));
-            }
-
-            public XmlStreamingSerializer(TextWriter w)
-                : this(XmlWriter.Create(w))
-            {
-            }
-
-            public XmlStreamingSerializer(XmlWriter writer)
-                : this()
-            {
-                this.writer = writer;
-                writer.WriteStartDocument();
-                writer.WriteStartElement("ArrayOf" + typeof(T).Name);
-            }
-
-            public void Finish()
-            {
-                writer.WriteEndDocument();
-                writer.Flush();
-                finished = true;
-            }
-
-            public void Close()
-            {
-                if (!finished)
-                    Finish();
-                writer.Close();
-            }
-
-            public void Serialize(T item)
-            {
-                serializer.Serialize(writer, item, ns);
+                var sr = new XmlSerializer(type);
+                return sr.Deserialize(text);
             }
         }
     }

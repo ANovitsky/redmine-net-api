@@ -15,13 +15,15 @@ namespace Redmine.Net.Api.JSonConverters
             {
                 var entity = new CustomFieldPossibleValue();
 
-                entity.Value = dictionary.GetValue<string>("value");
+                entity.Value = dictionary.GetValue<string>(RedmineKeys.VALUE);
 
                 return entity;
             }
 
             return null;
         }
+
+        public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer) { return null; }
 
         public override IEnumerable<Type> SupportedTypes { get { return new List<Type>(new[] { typeof(CustomFieldPossibleValue) }); } }
 

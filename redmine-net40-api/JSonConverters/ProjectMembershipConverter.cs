@@ -15,7 +15,6 @@
 */
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Web.Script.Serialization;
 using Redmine.Net.Api.Types;
@@ -32,11 +31,11 @@ namespace Redmine.Net.Api.JSonConverters
             {
                 var projectMembership = new ProjectMembership();
 
-                projectMembership.Id = dictionary.GetValue<int>("id");
-                projectMembership.Group = dictionary.GetValueAsIdentifiableName("group");
-                projectMembership.Project = dictionary.GetValueAsIdentifiableName("project");
-                projectMembership.Roles = dictionary.GetValueAsCollection<MembershipRole>("roles");
-                projectMembership.User = dictionary.GetValueAsIdentifiableName("user");
+                projectMembership.Id = dictionary.GetValue<int>(RedmineKeys.ID);
+                projectMembership.Group = dictionary.GetValueAsIdentifiableName(RedmineKeys.GROUP);
+                projectMembership.Project = dictionary.GetValueAsIdentifiableName(RedmineKeys.PROJECT);
+                projectMembership.Roles = dictionary.GetValueAsCollection<MembershipRole>(RedmineKeys.ROLES);
+                projectMembership.User = dictionary.GetValueAsIdentifiableName(RedmineKeys.USER);
 
                 return projectMembership;
             }
@@ -46,16 +45,15 @@ namespace Redmine.Net.Api.JSonConverters
         public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
         {
             var entity = obj as ProjectMembership;
-            var root = new Dictionary<string, object>();
             var result = new Dictionary<string, object>();
 
             if (entity != null)
             {
-                if (entity.User != null)
-                    result.Add("user_id", entity.User.Id);
-                result.Add("role_ids", entity.Roles.Select(x => x.Id).ToArray());
+                result.WriteIdIfNotNull(entity.User, RedmineKeys.USER_ID);
+                result.WriteIdsArray(RedmineKeys.ROLE_IDS, entity.Roles);
 
-                root["membership"] = result;
+                var root = new Dictionary<string, object>();
+                root[RedmineKeys.MEMBERSHIP] = result;
                 return root;
             }
 

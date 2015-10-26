@@ -19,11 +19,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Web.Script.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
-using Redmine.Net.Api.JSonConverters;
 using Redmine.Net.Api.Types;
 
 namespace Redmine.Net.Api
@@ -232,12 +229,7 @@ namespace Redmine.Net.Api
             else
                 writer.WriteElementString(tag, string.Empty);
         }
-
-        public static void WriteIdIfNotNull(this Dictionary<string, object> dictionary, IdentifiableName ident, String key)
-        {
-            if (ident != null) dictionary.Add(key, ident.Id);
-        }
-
+        
         /// <summary>
         /// Writes string empty if T has default value or null.
         /// </summary>
@@ -245,7 +237,7 @@ namespace Redmine.Net.Api
         /// <param name="writer">The writer.</param>
         /// <param name="val">The value.</param>
         /// <param name="tag">The tag.</param>
-        public static void WriteValue<T>(this XmlWriter writer, T? val, String tag) where T : struct
+        public static void WriteValueOrEmpty<T>(this XmlWriter writer, T? val, String tag) where T : struct
         {
             if (!val.HasValue || EqualityComparer<T>.Default.Equals(val.Value, default(T)))
                 writer.WriteElementString(tag, string.Empty);
@@ -260,7 +252,7 @@ namespace Redmine.Net.Api
                 writer.WriteElementString(tag, string.Format(NumberFormatInfo.InvariantInfo, "{0}", val.Value));
         }
 
-        public static void WriteDate(this XmlWriter writer, DateTime? val, String tag)
+        public static void WriteDateOrEmpty(this XmlWriter writer, DateTime? val, String tag)
         {
             if (!val.HasValue || val.Value.Equals(default(DateTime)))
                 writer.WriteElementString(tag, string.Empty);
@@ -270,7 +262,6 @@ namespace Redmine.Net.Api
 
         public static void WriteArray(this XmlWriter writer, IEnumerable col, string elementName)
         {
-
             writer.WriteStartElement(elementName);
             writer.WriteAttributeString("type", "array");
             if (col != null)
@@ -282,91 +273,5 @@ namespace Redmine.Net.Api
             }
             writer.WriteEndElement();
         }
-
-        public static void WriteIfNotDefaultOrNull<T>(this Dictionary<string, object> dictionary, T? val, String tag) where T : struct
-        {
-            if (!val.HasValue || EqualityComparer<T>.Default.Equals(val.Value, default(T)))
-                dictionary.Add(tag, string.Empty);
-            else
-                dictionary.Add(tag, val.Value);
-        }
-
-        public static T GetValue<T>(this IDictionary<string, object> dictionary, string key)
-        {
-            object val;
-            var dict = dictionary;
-            var type = typeof(T);
-            if (!dict.TryGetValue(key, out val)) return default(T);
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                if (val == null) return default(T);
-
-                type = Nullable.GetUnderlyingType(type);
-            }
-
-            if (val.GetType() == typeof(ArrayList)) return (T)val;
-
-            if (type.IsEnum) val = Enum.Parse(type, val.ToString(), true);
-
-            return (T)Convert.ChangeType(val, type);
-        }
-
-        public static IdentifiableName GetValueAsIdentifiableName(this IDictionary<string, object> dictionary, string key)
-        {
-            object val;
-
-            if (!dictionary.TryGetValue(key, out val)) return null;
-
-            var ser = new JavaScriptSerializer();
-            ser.RegisterConverters(new[] { new IdentifiableNameConverter() });
-
-            var result = ser.ConvertToType<IdentifiableName>(val);
-            return result;
-        }
-
-        /// <summary>
-        /// For Json
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="dictionary"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static List<T> GetValueAsCollection<T>(this IDictionary<string, object> dictionary, string key) where T : new()
-        {
-            object val;
-
-            if (!dictionary.TryGetValue(key, out val)) return null;
-
-            var ser = new JavaScriptSerializer();
-            ser.RegisterConverters(new[] { RedmineSerialization.Converters[typeof(T)] });
-
-            List<T> list = new List<T>();
-
-            var arrayList = val as ArrayList;
-            if (arrayList != null)
-            {
-                foreach (var item in arrayList)
-                {
-                    var type = ser.ConvertToType<T>(item);
-                    list.Add(type);
-                }
-            }
-            else
-            {
-                var dict = val as Dictionary<string, object>;
-                if (dict != null)
-                {
-                    foreach (var pair in dict)
-                    {
-                        var type = ser.ConvertToType<T>(pair.Value);
-                        list.Add(type);
-                    }
-
-                }
-            }
-            return list;
-        }
-
     }
 }

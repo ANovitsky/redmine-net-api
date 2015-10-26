@@ -1,14 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Redmine.Net.Api;
 using Redmine.Net.Api.Types;
-using System;
+
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace UnitTestRedmineNetApi
 {
@@ -18,27 +16,32 @@ namespace UnitTestRedmineNetApi
         private RedmineManager redmineManager;
         private string uri;
         private string apiKey;
+        private string username;
+        private string password;
 
         [TestInitialize]
         public void Initialize()
         {
             uri = ConfigurationManager.AppSettings["uri"];
-            apiKey = ConfigurationManager.AppSettings["apiKey"];
+            // apiKey = ConfigurationManager.AppSettings["apiKey"];
 
-            SetMimeTypeJSON();
+            username = ConfigurationManager.AppSettings["username"];
+            password = ConfigurationManager.AppSettings["password"];
+
             SetMimeTypeXML();
+            SetMimeTypeJSON();
         }
 
         [Conditional("JSON")]
         private void SetMimeTypeJSON()
         {
-            redmineManager = new RedmineManager(uri, apiKey, MimeFormat.json);
+            redmineManager = new RedmineManager(uri, username, password, MimeFormat.json);
         }
 
         [Conditional("XML")]
         private void SetMimeTypeXML()
         {
-            redmineManager = new RedmineManager(uri, apiKey, MimeFormat.xml);
+            redmineManager = new RedmineManager(uri, username, password);
         }
 
         [TestMethod]
@@ -47,7 +50,7 @@ namespace UnitTestRedmineNetApi
             User currentUser = redmineManager.GetCurrentUser();
 
             Assert.AreEqual(currentUser.ApiKey, ConfigurationManager.AppSettings["apiKey"]);
-        }    
+        }
 
         [TestMethod]
         public void RedmineUser_ShouldGetUserById()
@@ -55,7 +58,7 @@ namespace UnitTestRedmineNetApi
             var id = 8;
 
             User user = redmineManager.GetObject<User>(id.ToString(), new NameValueCollection { { "include", "groups" }, { "include", "memberships" } });
-            
+
             Assert.AreEqual(user.Login, "alinac");
         }
 
@@ -66,7 +69,7 @@ namespace UnitTestRedmineNetApi
 
             try
             {
-               redmineManager.CreateObject<User>(redmineUser);
+                redmineManager.CreateObject<User>(redmineUser);
             }
             catch (RedmineException exc)
             {
@@ -95,7 +98,7 @@ namespace UnitTestRedmineNetApi
             {
                 savedRedmineUser = redmineManager.CreateObject<User>(redmineUser);
             }
-            catch (RedmineException exc)
+            catch (RedmineException)
             {
                 Assert.Fail("Create user failed.");
                 return;
@@ -128,7 +131,7 @@ namespace UnitTestRedmineNetApi
             {
                 user = redmineManager.GetObject<User>(id.ToString(), null);
             }
-            catch (RedmineException exc)
+            catch (RedmineException)
             {
 
                 Assert.Fail("User not found.");
@@ -141,7 +144,7 @@ namespace UnitTestRedmineNetApi
                 {
                     redmineManager.DeleteObject<User>(id.ToString(), null);
                 }
-                catch (RedmineException exc)
+                catch (RedmineException)
                 {
                     Assert.Fail("User could not be deleted.");
                     return;

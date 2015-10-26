@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.Script.Serialization;
 using Redmine.Net.Api.Types;
 
@@ -32,20 +31,20 @@ namespace Redmine.Net.Api.JSonConverters
             {
                 var project = new Project();
 
-                project.Id = dictionary.GetValue<int>("id");
-                project.Description = dictionary.GetValue<string>("description");
-                project.HomePage = dictionary.GetValue<string>("homepage");
-                project.Name = dictionary.GetValue<string>("name");
-                project.Identifier = dictionary.GetValue<string>("identifier");
-                project.Status = dictionary.GetValue<ProjectStatus>("status");
-                project.CreatedOn = dictionary.GetValue<DateTime?>("created_on");
-                project.UpdatedOn = dictionary.GetValue<DateTime?>("updated_on");
-                project.Trackers = dictionary.GetValueAsCollection<ProjectTracker>("trackers");
-                project.CustomFields = dictionary.GetValueAsCollection<IssueCustomField>("custom_fields");
-                project.IsPublic = dictionary.GetValue<bool>("is_public");
-                project.Parent = dictionary.GetValueAsIdentifiableName("parent");
-                project.IssueCategories = dictionary.GetValueAsCollection<ProjectIssueCategory>("issue_categories");
-                project.EnabledModules = dictionary.GetValueAsCollection<ProjectEnabledModule>("enabled_modules");
+                project.Id = dictionary.GetValue<int>(RedmineKeys.ID);
+                project.Description = dictionary.GetValue<string>(RedmineKeys.DESCRIPTION);
+                project.HomePage = dictionary.GetValue<string>(RedmineKeys.HOMEPAGE);
+                project.Name = dictionary.GetValue<string>(RedmineKeys.NAME);
+                project.Identifier = dictionary.GetValue<string>(RedmineKeys.IDENTIFIER);
+                project.Status = dictionary.GetValue<ProjectStatus>(RedmineKeys.STATUS);
+                project.CreatedOn = dictionary.GetValue<DateTime?>(RedmineKeys.CREATED_ON);
+                project.UpdatedOn = dictionary.GetValue<DateTime?>(RedmineKeys.UPDATED_ON);
+                project.Trackers = dictionary.GetValueAsCollection<ProjectTracker>(RedmineKeys.TRACKERS);
+                project.CustomFields = dictionary.GetValueAsCollection<IssueCustomField>(RedmineKeys.CUSTOM_FIELDS);
+                project.IsPublic = dictionary.GetValue<bool>(RedmineKeys.IS_PUBLIC);
+                project.Parent = dictionary.GetValueAsIdentifiableName(RedmineKeys.PARENT);
+                project.IssueCategories = dictionary.GetValueAsCollection<ProjectIssueCategory>(RedmineKeys.ISSUE_CATEGORIES);
+                project.EnabledModules = dictionary.GetValueAsCollection<ProjectEnabledModule>(RedmineKeys.ENABLED_MODULES);
                 return project;
             }
 
@@ -55,37 +54,25 @@ namespace Redmine.Net.Api.JSonConverters
         public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
         {
             var entity = obj as Project;
-            var root = new Dictionary<string, object>();
             var result = new Dictionary<string, object>();
 
             if (entity != null)
             {
-                result.Add("name", entity.Name);
-                result.Add("identifier", entity.Identifier);
-                result.Add("description", entity.Description);
-                result.Add("homepage", entity.HomePage);
-                result.Add("inherit_members", entity.InheritMembers);
-                result.Add("is_public", entity.IsPublic);
+                result.Add(RedmineKeys.NAME, entity.Name);
+                result.Add(RedmineKeys.IDENTIFIER, entity.Identifier);
+                result.Add(RedmineKeys.DESCRIPTION, entity.Description);
+                result.Add(RedmineKeys.HOMEPAGE, entity.HomePage);
+                result.Add(RedmineKeys.INHERIT_MEMBERS, entity.InheritMembers);
+                result.Add(RedmineKeys.IS_PUBLIC, entity.IsPublic);
 
-                if (entity.Parent != null)
-                    result.Add("parent_id", entity.Parent.Id);
-                else
-                    result.Add("parent_id", string.Empty);
-                
-                if (entity.CustomFields != null)
-                {
-                    serializer.RegisterConverters(new[] { new IssueCustomFieldConverter() });
-                    result.Add("custom_fields", entity.CustomFields.ToArray());
-                }
+                result.WriteIdOrEmpty(entity.Parent, RedmineKeys.PARENT_ID, string.Empty);
+                result.WriteArray(RedmineKeys.CUSTOM_FIELDS, entity.CustomFields, new IssueCustomFieldConverter(), serializer);
 
-                if (entity.Trackers != null)              
-                    result.Add("tracker_ids", entity.Trackers.Select(t => t.Id).ToArray());      
-
-                if (entity.EnabledModules != null)
-                    result.Add("enabled_module_names", entity.EnabledModules.Select(e=> e.Name).ToArray());
-
-
-                root["project"] = result;
+                result.WriteIdsArray(RedmineKeys.TRACKER_IDS, entity.Trackers);
+                result.WriteNamesArray(RedmineKeys.ENABLED_MODULE_NAMES, entity.EnabledModules);
+              
+                var root = new Dictionary<string, object>();
+                root[RedmineKeys.PROJECT] = result;
                 return root;
             }
 
