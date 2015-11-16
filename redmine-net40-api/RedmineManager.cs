@@ -627,6 +627,12 @@ namespace Redmine.Net.Api
             // Workaround - it seems that WebClient doesn't send credentials in each POST request
             webClient.Headers.Add(HttpRequestHeader.Authorization, basicAuthorization);
 
+            //use default proxy:
+            var wp = WebRequest.DefaultWebProxy;
+            wp.Credentials = CredentialCache.DefaultCredentials;
+
+            webClient.Proxy = wp;
+
             return webClient;
         }
 
