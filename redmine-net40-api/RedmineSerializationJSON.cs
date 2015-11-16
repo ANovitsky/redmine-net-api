@@ -98,7 +98,8 @@ namespace Redmine.Net.Api
             }
             catch (Exception)
             {
-                return null;
+                throw;
+                //return null;
             }
         }
 
@@ -186,8 +187,8 @@ namespace Redmine.Net.Api
         {
             var type = typeof(T);
             var result = JsonDeserialize(jsonString, type, root);
-            if (result == null) return default(T);
-
+            if (result == null) throw new Exception("An error on JsonDeserialize<" + type.Name + "> from '" + jsonString + "'"); //return default(T);
+            
             return (T)result;
         }
 

@@ -113,6 +113,7 @@ namespace Redmine.Net.Api
 
             if (!verifyServerCert)
                 ServicePointManager.ServerCertificateValidationCallback += RemoteCertValidate;
+                        
         }
 
         /// <summary>
@@ -713,6 +714,7 @@ namespace Redmine.Net.Api
                     }
                     catch (Exception ex)
                     {
+                        OnError(new ErrorEventArgs(ex));
                         Trace.TraceError(ex.Message);
                     }
                 }
