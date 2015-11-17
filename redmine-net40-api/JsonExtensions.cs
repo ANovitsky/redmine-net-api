@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Web.Script.Serialization;
@@ -96,7 +97,7 @@ namespace Redmine.Net.Api
 
             if (type.IsEnum) val = Enum.Parse(type, val.ToString(), true);
 
-            return (T)Convert.ChangeType(val, type);
+            return (T)Convert.ChangeType(val, type, CultureInfo.InvariantCulture);
         }
 
         public static IdentifiableName GetValueAsIdentifiableName(this IDictionary<string, object> dictionary, string key)

@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Web.Script.Serialization;
 using Redmine.Net.Api.JSonConverters;
@@ -129,7 +130,7 @@ namespace Redmine.Net.Api
 
             if (dic.TryGetValue("total_count", out tc)) totalCount = (int)tc;
 
-            if (dic.TryGetValue(root.ToLower(), out obj))
+            if (dic.TryGetValue(root.ToLower(CultureInfo.InvariantCulture), out obj))
             {
                 var list = new ArrayList();
                 if (type == typeof(Error))
@@ -206,7 +207,7 @@ namespace Redmine.Net.Api
             if (dic == null) return null;
 
             object obj;
-            if (dic.TryGetValue(root ?? type.Name.ToLower(), out obj))
+            if (dic.TryGetValue(root ?? type.Name.ToLower(CultureInfo.InvariantCulture), out obj))
             {
                 var deserializedObject = ser.ConvertToType(obj, type);
 
