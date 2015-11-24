@@ -187,10 +187,17 @@ namespace Redmine.Net.Api
         public static T JsonDeserialize<T>(string jsonString, string root) where T : new()
         {
             var type = typeof(T);
-            var result = JsonDeserialize(jsonString, type, root);
-            if (result == null) throw new Exception("An error on JsonDeserialize<" + type.Name + "> from '" + jsonString + "'"); //return default(T);
-            
-            return (T)result;
+            try
+            {
+                var result = JsonDeserialize(jsonString, type, root);
+                if (result == null) throw new NullReferenceException("JsonDeserialize return null");
+
+                return (T)result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error on JsonDeserialize<" + type.Name + "> from '" + jsonString + "'", ex);
+            }
         }
 
         public static object JsonDeserialize(string jsonString, Type type, string root)
