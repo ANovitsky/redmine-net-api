@@ -163,9 +163,16 @@ namespace Redmine.Net.Api
         /// </summary>
         public static List<T> JsonDeserializeToList<T>(string jsonString, string root, out int totalCount) where T : class,new()
         {
-            var result = JsonDeserializeToList(jsonString, root, typeof(T), out totalCount);
+            try
+            {
+                var result = JsonDeserializeToList(jsonString, root, typeof(T), out totalCount);
 
-            return result == null ? null : ((ArrayList)result).OfType<T>().ToList();
+                return result == null ? null : ((ArrayList)result).OfType<T>().ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error on JsonDeserializeToList<" + typeof(T).Name + "> from '" + jsonString.Substring(0, jsonString.Length > 800 ? 799 : jsonString.Length) + "'", ex);
+            }
         }
 
         private static void AddToList(JavaScriptSerializer ser, IList list, Type type, object obj)
