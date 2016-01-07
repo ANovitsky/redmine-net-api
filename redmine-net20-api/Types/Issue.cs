@@ -261,6 +261,9 @@ namespace Redmine.Net.Api.Types
         [XmlArrayItem(RedmineKeys.WATCHER)]
         public IList<Watcher> Watchers { get; set; }
 
+        [XmlElement(RedmineKeys.ACTIVITY_ID)]
+        public int? ActivityId { get; set; }
+
         public XmlSchema GetSchema() { return null; }
 
         public void ReadXml(XmlReader reader)
@@ -337,6 +340,9 @@ namespace Redmine.Net.Api.Types
 
                     case RedmineKeys.WATCHERS: Watchers = reader.ReadElementContentAsCollection<Watcher>(); break;
 
+                    //Easy Redmine
+                    case RedmineKeys.ACTIVITY_ID: ActivityId = reader.ReadElementContentAsNullableInt(); break;
+
                     default: reader.Read(); break;
                 }
             }
@@ -374,6 +380,9 @@ namespace Redmine.Net.Api.Types
             writer.WriteArray(Uploads, RedmineKeys.UPLOADS);
             writer.WriteArray(CustomFields, RedmineKeys.CUSTOM_FIELDS);
 
+            //Easy Redmine
+            writer.WriteValueOrEmpty(ActivityId, RedmineKeys.ACTIVITY_ID);
+
             if (Watchers != null)
             {
                 foreach (var item in Watchers)
@@ -384,9 +393,10 @@ namespace Redmine.Net.Api.Types
 
         }
 
+
         public object Clone()
         {
-            var issue = new Issue { AssignedTo = AssignedTo, Author = Author, Category = Category, CustomFields = CustomFields, Description = Description, DoneRatio = DoneRatio, DueDate = DueDate, SpentHours = SpentHours, EstimatedHours = EstimatedHours, Priority = Priority, StartDate = StartDate, Status = Status, Subject = Subject, Tracker = Tracker, Project = Project, FixedVersion = FixedVersion, Notes = Notes, Watchers = Watchers };
+            var issue = new Issue { AssignedTo = AssignedTo, Author = Author, Category = Category, CustomFields = CustomFields, Description = Description, DoneRatio = DoneRatio, DueDate = DueDate, SpentHours = SpentHours, EstimatedHours = EstimatedHours, Priority = Priority, StartDate = StartDate, Status = Status, Subject = Subject, Tracker = Tracker, Project = Project, FixedVersion = FixedVersion, Notes = Notes, Watchers = Watchers, ActivityId = ActivityId };
             return issue;
         }
 

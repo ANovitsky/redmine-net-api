@@ -174,7 +174,7 @@ namespace Redmine.Net.Api
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException"> An error occurred during deserialization. The original exception is available
         /// using the System.Exception.InnerException property.</exception>
-        public User GetCurrentUser(NameValueCollection parameters = null)
+        public virtual User GetCurrentUser(NameValueCollection parameters = null)
         {
             return ExecuteDownload<User>(string.Format(REQUEST_FORMAT, host, urls[typeof(User)], CURRENT_USER_URI, mimeFormat), "GetCurrentUser", parameters);
         }
@@ -186,7 +186,7 @@ namespace Redmine.Net.Api
         /// <param name=RedmineKeys.NAME> filter users on their login, firstname, lastname and mail ; if the pattern contains a space, it will also return users whose firstname match the first word or lastname match the second word.</param>
         /// <param name="groupId">get only users who are members of the given group</param>
         /// <returns></returns>
-        public IList<User> GetUsers(UserStatus userStatus = UserStatus.STATUS_ACTIVE, string name = null, int groupId = 0)
+        public virtual IList<User> GetUsers(UserStatus userStatus = UserStatus.STATUS_ACTIVE, string name = null, int groupId = 0)
         {
             var filters = new NameValueCollection { { "status", ((int)userStatus).ToString(CultureInfo.InvariantCulture) } };
 
@@ -197,14 +197,14 @@ namespace Redmine.Net.Api
             return GetTotalObjectList<User>(filters);
         }
 
-        public void AddWatcher(int issueId, int userId)
+        public virtual void AddWatcher(int issueId, int userId)
         {
             ExecuteUpload(string.Format(REQUEST_FORMAT, host, urls[typeof(Issue)], issueId + "/watchers", mimeFormat), POST, mimeFormat == MimeFormat.xml
                 ? "<user_id>" + userId + "</user_id>"
                 : "{\"user_id\":\"" + userId + "\"}", "AddWatcher");
         }
 
-        public void RemoveWatcher(int issueId, int userId)
+        public virtual void RemoveWatcher(int issueId, int userId)
         {
             ExecuteUpload(string.Format(REQUEST_FORMAT, host, urls[typeof(Issue)], issueId + "/watchers/" + userId, mimeFormat), DELETE, string.Empty, "RemoveWatcher");
         }
@@ -214,7 +214,7 @@ namespace Redmine.Net.Api
         /// </summary>
         /// <param name="groupId">The group id.</param>
         /// <param name="userId">The user id.</param>
-        public void AddUser(int groupId, int userId)
+        public virtual void AddUser(int groupId, int userId)
         {
             ExecuteUpload(string.Format(REQUEST_FORMAT, host, urls[typeof(Group)], groupId + "/users", mimeFormat), POST, mimeFormat == MimeFormat.xml
                 ? "<user_id>" + userId + "</user_id>"
@@ -226,7 +226,7 @@ namespace Redmine.Net.Api
         /// </summary>
         /// <param name="groupId">The group id.</param>
         /// <param name="userId">The user id.</param>
-        public void DeleteUser(int groupId, int userId)
+        public virtual void DeleteUser(int groupId, int userId)
         {
             ExecuteUpload(string.Format(REQUEST_FORMAT, host, urls[typeof(Group)], groupId + "/users/" + userId, mimeFormat), DELETE, string.Empty, "DeleteUser");
         }
@@ -300,7 +300,7 @@ namespace Redmine.Net.Api
         /// </summary>
         /// <param name="data">The content of the file that will be uploaded on server.</param>
         /// <returns>Returns the token for uploaded file.</returns>
-        public Upload UploadFile(byte[] data)
+        public virtual Upload UploadFile(byte[] data)
         {
             using (var wc = CreateUploadWebClient())
             {
@@ -319,7 +319,7 @@ namespace Redmine.Net.Api
             return null;
         }
 
-        public byte[] DownloadFile(string address)
+        public virtual byte[] DownloadFile(string address)
         {
             using (var wc = CreateUploadWebClient())
             {
@@ -346,7 +346,7 @@ namespace Redmine.Net.Api
         /// <returns>Returns a paginated list of objects.</returns>
         /// <remarks>By default only 25 results can be retrieved by request. Maximum is 100. To change the maximum value set in your Settings -> General, "Objects per page options".By adding (for instance) 9999 there would make you able to get that many results per request.</remarks>
         /// <exception cref="Redmine.Net.Api.RedmineException"></exception>
-        public IList<T> GetObjectList<T>(NameValueCollection parameters) where T : class, new()
+        public virtual IList<T> GetObjectList<T>(NameValueCollection parameters) where T : class, new()
         {
             int totalCount;
             return GetObjectList<T>(parameters, out totalCount);
@@ -362,7 +362,7 @@ namespace Redmine.Net.Api
         /// <remarks>By default only 25 results can be retrieved by request. Maximum is 100. To change the maximum value set in your Settings -> General, "Objects per page options".By adding (for instance) 9999 there would make you able to get that many results per request.</remarks>
         /// <exception cref="Redmine.Net.Api.RedmineException"></exception>
         /// <code></code>
-        public IList<T> GetObjectList<T>(NameValueCollection parameters, out int totalCount) where T : class, new()
+        public virtual IList<T> GetObjectList<T>(NameValueCollection parameters, out int totalCount) where T : class, new()
         {
             totalCount = -1;
             if (!urls.ContainsKey(typeof(T))) return null;
@@ -413,7 +413,7 @@ namespace Redmine.Net.Api
         /// <returns>Returns a complete list of objects.</returns>
         /// <remarks>By default only 25 results can be retrieved per request. Maximum is 100. To change the maximum value set in your Settings -> General, "Objects per page options".By adding (for instance) 9999 there would make you able to get that many results per request.</remarks>
         /// <exception cref="Redmine.Net.Api.RedmineException"></exception>
-        public IList<T> GetTotalObjectList<T>(NameValueCollection parameters) where T : class, new()
+        public virtual IList<T> GetTotalObjectList<T>(NameValueCollection parameters) where T : class, new()
         {
             int totalCount, pageSize;
             List<T> resultList = null;
@@ -456,7 +456,7 @@ namespace Redmine.Net.Api
         ///     Issue issue = redmineManager.GetObject&lt;Issue&gt;(issueId, parameters);
         /// </example>
         /// </code>
-        public T GetObject<T>(string id, NameValueCollection parameters) where T : class, new()
+        public virtual T GetObject<T>(string id, NameValueCollection parameters) where T : class, new()
         {
             var type = typeof(T);
 
@@ -480,7 +480,7 @@ namespace Redmine.Net.Api
         ///     redmineManager.CreateObject(project);
         /// </example>
         /// </code>
-        public T CreateObject<T>(T obj, string ownerId = null) where T : class, new()
+        public virtual T CreateObject<T>(T obj, string ownerId = null) where T : class, new()
         {
             var type = typeof(T);
 
@@ -518,7 +518,7 @@ namespace Redmine.Net.Api
         /// <remarks>When trying to update an object with invalid or missing attribute parameters, you will get a 422 Unprocessable Entity response. That means that the object could not be updated.</remarks>
         /// <exception cref="Redmine.Net.Api.RedmineException"></exception>
         /// <code></code>
-        public void UpdateObject<T>(string id, T obj) where T : class, new()
+        public virtual void UpdateObject<T>(string id, T obj) where T : class, new()
         {
             UpdateObject(id, obj, null);
         }
@@ -533,7 +533,7 @@ namespace Redmine.Net.Api
         /// <remarks>When trying to update an object with invalid or missing attribute parameters, you will get a 422 Unprocessable Entity response. That means that the object could not be updated.</remarks>
         /// <exception cref="Redmine.Net.Api.RedmineException"></exception>
         /// <code></code>
-        public void UpdateObject<T>(string id, T obj, string projectId) where T : class, new()
+        public virtual void UpdateObject<T>(string id, T obj, string projectId) where T : class, new()
         {
             var type = typeof(T);
 
@@ -557,7 +557,7 @@ namespace Redmine.Net.Api
         /// <param name="parameters">Optional filters and/or optional fetched data.</param>
         /// <exception cref="RedmineException"></exception>
         /// <code></code>
-        public void DeleteObject<T>(string id, NameValueCollection parameters) where T : class
+        public virtual void DeleteObject<T>(string id, NameValueCollection parameters) where T : class
         {
             var type = typeof(T);
 
@@ -572,7 +572,7 @@ namespace Redmine.Net.Api
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         /// <code></code>
-        protected WebClient CreateWebClient(NameValueCollection parameters)
+        protected virtual WebClient CreateWebClient(NameValueCollection parameters)
         {
             var webClient = new RedmineWebClient();
 
@@ -606,7 +606,7 @@ namespace Redmine.Net.Api
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         /// <code></code>
-        protected WebClient CreateUploadWebClient(NameValueCollection parameters = null)
+        protected virtual WebClient CreateUploadWebClient(NameValueCollection parameters = null)
         {
             var webClient = new RedmineWebClient();
 
@@ -645,7 +645,7 @@ namespace Redmine.Net.Api
         /// <param name="error">The error.</param>
         /// <returns></returns>
         /// <code></code>
-        protected bool RemoteCertValidate(object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors error)
+        protected virtual bool RemoteCertValidate(object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors error)
         {
             //Cert Validation Logic
             return true;
@@ -728,14 +728,14 @@ namespace Redmine.Net.Api
             }
         }
 
-        private string Serialize<T>(T obj) where T : class, new()
+        protected virtual string Serialize<T>(T obj) where T : class, new()
         {
             if (mimeFormat == MimeFormat.json)
                 return RedmineSerialization.JsonSerializer(obj);
             return RedmineSerialization.ToXML(obj);
         }
 
-        private T Deserialize<T>(string response) where T : class, new()
+        protected virtual T Deserialize<T>(string response) where T : class, new()
         {
             Type type = typeof(T);
 
@@ -767,7 +767,7 @@ namespace Redmine.Net.Api
 
         }
 
-        private IList<T> DeserializeList<T>(string response, string jsonRoot, out int totalCount) where T : class, new()
+        protected virtual IList<T> DeserializeList<T>(string response, string jsonRoot, out int totalCount) where T : class, new()
         {
             Type type = typeof(T);
             try
@@ -804,7 +804,7 @@ namespace Redmine.Net.Api
             }
         }
 
-        private void ExecuteUpload(string address, string actionType, string data, string methodName)
+        protected virtual void ExecuteUpload(string address, string actionType, string data, string methodName)
         {
             OnLog(new LogEventArgs
             {
@@ -829,7 +829,7 @@ namespace Redmine.Net.Api
             }
         }
 
-        private T ExecuteUpload<T>(string address, string actionType, string data, string methodName) where T : class, new()
+        protected virtual T ExecuteUpload<T>(string address, string actionType, string data, string methodName) where T : class, new()
         {
             OnLog(new LogEventArgs
             {
@@ -857,7 +857,7 @@ namespace Redmine.Net.Api
             }
         }
 
-        private T ExecuteDownload<T>(string address, string methodName, NameValueCollection parameters = null) where T : class, new()
+        protected virtual T ExecuteDownload<T>(string address, string methodName, NameValueCollection parameters = null) where T : class, new()
         {
             OnLog(new LogEventArgs
             {
@@ -881,7 +881,7 @@ namespace Redmine.Net.Api
             }
         }
 
-        private IList<T> ExecuteDownloadList<T>(string address, string methodName, string jsonRoot, out int totalCount, NameValueCollection parameters = null) where T : class, new()
+        protected virtual IList<T> ExecuteDownloadList<T>(string address, string methodName, string jsonRoot, out int totalCount, NameValueCollection parameters = null) where T : class, new()
         {
             OnLog(new LogEventArgs
             {

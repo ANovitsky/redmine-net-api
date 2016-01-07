@@ -62,6 +62,9 @@ namespace Redmine.Net.Api.JSonConverters
                 issue.Changesets = dictionary.GetValueAsCollection<ChangeSet>(RedmineKeys.CHANGESETS);
                 issue.Watchers = dictionary.GetValueAsCollection<Watcher>(RedmineKeys.WATCHERS);
                 issue.Children = dictionary.GetValueAsCollection<IssueChild>(RedmineKeys.CHILDREN);
+
+                //easy redmine
+                issue.ActivityId = dictionary.GetValue<int?>(RedmineKeys.ACTIVITY_ID);
                 return issue;
             }
 
@@ -102,7 +105,10 @@ namespace Redmine.Net.Api.JSonConverters
                 result.WriteArray(RedmineKeys.CUSTOM_FIELDS, entity.CustomFields, new IssueCustomFieldConverter(), serializer);
 
                 result.WriteIdsArray(RedmineKeys.WATCHER_USER_IDS, entity.Watchers);
-                
+
+                //EASY REDMINE
+                result.WriteValueOrEmpty(entity.ActivityId, RedmineKeys.ACTIVITY_ID);
+
                 var root = new Dictionary<string, object>();
                 root[RedmineKeys.ISSUE] = result;
                 return root;
