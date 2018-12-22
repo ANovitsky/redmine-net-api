@@ -51,9 +51,9 @@ namespace Redmine.Net.Api.JSonConverters
                 issue.IsPrivate = dictionary.GetValue<bool>(RedmineKeys.IS_PRIVATE);
                 issue.StartDate = dictionary.GetValue<DateTime?>(RedmineKeys.START_DATE);
                 issue.DueDate = dictionary.GetValue<DateTime?>(RedmineKeys.DUE_DATE);
-                issue.DoneRatio = dictionary.GetValue<float>(RedmineKeys.DONE_RATIO);
-                issue.EstimatedHours = dictionary.GetValue<float>(RedmineKeys.ESTIMATED_HOURS);
-                issue.SpentHours = dictionary.GetValue<float>(RedmineKeys.SPENT_HOURS);
+                issue.DoneRatio = dictionary.GetValue<float?>(RedmineKeys.DONE_RATIO);
+                issue.EstimatedHours = dictionary.GetValue<float?>(RedmineKeys.ESTIMATED_HOURS);
+                issue.SpentHours = dictionary.GetValue<float?>(RedmineKeys.SPENT_HOURS);
                 issue.ParentIssue = dictionary.GetValueAsIdentifiableName(RedmineKeys.PARENT);
 
                 issue.CustomFields = dictionary.GetValueAsCollection<IssueCustomField>(RedmineKeys.CUSTOM_FIELDS);

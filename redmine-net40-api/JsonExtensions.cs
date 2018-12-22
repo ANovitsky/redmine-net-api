@@ -93,6 +93,11 @@ namespace Redmine.Net.Api
                 type = Nullable.GetUnderlyingType(type);
             }
 
+            if(val == null)
+            {
+                return default(T);
+            }
+
             if (val.GetType() == typeof(ArrayList)) return (T)val;
 
             if (type.IsEnum) val = Enum.Parse(type, val.ToString(), true);
